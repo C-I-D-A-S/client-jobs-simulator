@@ -1,6 +1,6 @@
-# Python-Project-Template
+# Client-Jobs-Simulator
 
-A startup template
+A Simulator for generate dynamic jobs and send requests to public-analysis-api
 
 ## Getting Started
 
@@ -22,7 +22,7 @@ pipenv install --dev
 
 pre-commit install
 
-pipenv run src/main.py
+pipenv run src/app.py
 ```
 
 ### Running Production
