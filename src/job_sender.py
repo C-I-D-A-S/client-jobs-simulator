@@ -40,6 +40,10 @@ class JobSender:
             for num, job in enumerate(jobs[:-1])
         ]
 
+        # add time logger
+        schedule_times = [job["schedule_time"] for job in jobs]
+        logger.info(f"schedule_time: {sorted(schedule_times)}")
+
         total_time = 0
         logger.info(f"wait: 0s current {total_time}s - req: 0 success")
 
