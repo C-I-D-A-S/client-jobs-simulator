@@ -29,8 +29,11 @@ class JobGenerator:
 
         def get_uniform_value(key):
             if isinstance(JOBS_CONFIG[key]["range"][-1], int):
-                return np.random.uniform(
-                    low=JOBS_CONFIG[key]["range"][0], high=JOBS_CONFIG[key]["range"][-1]
+                return int(
+                    np.random.uniform(
+                        low=JOBS_CONFIG[key]["range"][0],
+                        high=JOBS_CONFIG[key]["range"][-1],
+                    )
                 )
 
             index = int(
@@ -57,20 +60,27 @@ class JobGenerator:
                 probabilites = probabilites[::-1]
 
             if isinstance(JOBS_CONFIG[key]["range"][-1], int):
-                return np.random.choice(
-                    np.arange(
-                        JOBS_CONFIG[key]["range"][0], JOBS_CONFIG[key]["range"][-1],
-                    ),
-                    p=probabilites,
+                if (JOBS_CONFIG[key]["range"][-1] - JOBS_CONFIG[key]["range"][0]) == 0:
+                    return JOBS_CONFIG[key]["range"][0]
+
+                return int(
+                    np.random.choice(
+                        np.arange(
+                            JOBS_CONFIG[key]["range"][0],
+                            JOBS_CONFIG[key]["range"][-1] + 1,
+                        ),
+                        p=probabilites,
+                    )
                 )
             else:
-                index = np.random.choice(np.arange(0, value_size - 1), p=probabilites)
+                index = np.random.choice(np.arange(0, value_size), p=probabilites)
                 return JOBS_CONFIG[key]["range"][index]
 
         value_map = {
             "default": JOBS_CONFIG[key]["default"],
             "normal": get_normal_value(key),
             "uniform": get_uniform_value(key),
+            "slope": get_slope_value(key),
         }
 
         return value_map[JOBS_CONFIG[key]["distribution"]]
