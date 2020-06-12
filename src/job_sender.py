@@ -1,6 +1,7 @@
 import time
 import json
 import threading
+from collections import Counter
 
 from loguru import logger
 
@@ -33,7 +34,7 @@ class JobSender:
 
     @classmethod
     def send(cls, jobs):
-        logger.info(f"Job Len: {len(jobs)} - {jobs}")
+        logger.info(f"Job Len: {len(jobs)} - \n\n {jobs}\n")
 
         sleep_list = [
             jobs[num + 1]["trigger_time"] - jobs[num]["trigger_time"]
@@ -41,11 +42,22 @@ class JobSender:
         ]
 
         # add time logger
+        trigger_times = [job["trigger_time"] for job in jobs]
         schedule_times = [job["schedule_time"] for job in jobs]
-        logger.info(f"schedule_time: {sorted(schedule_times)}")
+        job_levels = [
+            0 if schedule_time < 600 else 1 if schedule_time < 1200 else 2
+            for schedule_time in schedule_times
+        ]
+        logger.info(f"trigger_time range: {sorted(trigger_times)}")
+        logger.info(f"schedule_time order: {sorted(schedule_times)}")
+        logger.info(f"job level order: {job_levels}")
+        logger.info(f"level counts: {Counter(job_levels)}\n")
 
         total_time = 0
-        logger.info(f"wait: 0s current {total_time}s - req: 0 success")
+        logger.info(
+            f"wait: 0s current {total_time}s"
+            + f" - req: 0 success - schedule_time: {jobs[0]['schedule_time']} - {job_levels[0]}"
+        )
 
         cls._send_req_in_thread(jobs[0])
 
@@ -55,5 +67,6 @@ class JobSender:
 
             cls._send_req_in_thread(jobs[num + 1])
             logger.info(
-                f"wait: {sleep_time}s current {total_time}s - req: {num + 1} success"
+                f"wait: {sleep_time}s current {total_time}s"
+                + f" - req: {num + 1} success - schedule_time: {jobs[num + 1]['schedule_time']} - {job_levels[num + 1]}"
             )

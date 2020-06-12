@@ -1,6 +1,7 @@
 import numpy as np
+from loguru import logger
 
-from config import JOB_TRIGGER_CONFIG, JOBS_CONFIG
+from config import JOB_TRIGGER_CONFIG, JOBS_CONFIG, SYSTEM_CONFIG
 
 
 class JobGenerator:
@@ -86,10 +87,13 @@ class JobGenerator:
         return value_map[JOBS_CONFIG[key]["distribution"]]
 
     @classmethod
-    def get_job(cls):
+    def get_job(cls, trigger_time=None):
+        if not trigger_time:
+            trigger_time = int(cls.get_value("random_trigger_time"))
+
         return {
             "job_type": cls.get_value("job_type"),
-            "trigger_time": int(cls.get_value("random_trigger_time")),
+            "trigger_time": trigger_time,
             "schedule_time": cls.get_value("schedule_time"),
             "computing_time": cls.get_value("computing_time"),
             "executors": cls.get_value("executors"),
@@ -98,7 +102,27 @@ class JobGenerator:
         }
 
     @classmethod
-    def gen(cls):
-        jobs = [cls.get_job() for _ in range(JOB_TRIGGER_CONFIG["RANDOM_JOB_NUM"])]
+    def get_schedule_jobs(cls):
+        logger.warning(f"Exp Time: {SYSTEM_CONFIG['EXP_TIME']}")
+        logger.warning(
+            f"Schedule Job Interval: {JOB_TRIGGER_CONFIG['SCHEDULE_JOB_INTERVAL']}"
+        )
 
-        return sorted(jobs, key=lambda x: x["trigger_time"])
+        jobs = []
+        for schedule_trigger_time in JOB_TRIGGER_CONFIG["SCHEDULE_JOB_INTERVAL"]:
+            start_time = 1
+            while start_time < SYSTEM_CONFIG["EXP_TIME"]:
+                job = cls.get_job(start_time)
+                start_time += schedule_trigger_time
+                jobs.append(job)
+
+        return jobs
+
+    @classmethod
+    def gen(cls):
+        # random on-demand jobs
+        jobs = [cls.get_job() for _ in range(JOB_TRIGGER_CONFIG["RANDOM_JOB_NUM"])]
+        # pre-defined schedule jobs
+        schedule_jobs = cls.get_schedule_jobs()
+
+        return sorted([*jobs, *schedule_jobs], key=lambda x: x["trigger_time"])

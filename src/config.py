@@ -12,6 +12,9 @@ load_dotenv()
 
 
 def str_to_list(values):
+    if not values:
+        return []
+
     return list(map(int, values.split(",")))
 
 
@@ -28,6 +31,7 @@ SYSTEM_CONFIG = {
 JOB_TRIGGER_CONFIG = {
     "RANDOM_JOB_NUM": int(os.environ.get("RANDOM_JOB_NUM", 10)),
     "SCHEDULE_JOB_NUM": int(os.environ.get("SCHEDULE_JOB_NUM", 10)),
+    "SCHEDULE_JOB_INTERVAL": str_to_list(os.environ.get("SCHEDULE_JOB_INTERVAL", "30")),
 }
 
 JOBS_CONFIG = {
